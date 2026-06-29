@@ -6,6 +6,9 @@ Xvfb -ac :99 -screen 0 1280x1024x16 > /dev/null 2>&1 &
 # Export some variables
 export DISPLAY=:99.0
 export PUPPETEER_EXEC_PATH="$(which google-chrome-stable)"
+# GHA sets HOME=/github/home (root-owned); use a writable dir for Chrome profile data.
+export HOME=/tmp/chrome-home
+mkdir -p "$HOME"
 
 # Run commands
 cmd=$@
