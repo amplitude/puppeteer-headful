@@ -22,6 +22,8 @@ RUN apt-get update \
     && while read pkg; do apt-get satisfy -y --no-install-recommends "${pkg}"; done < /opt/chrome-linux64/deb.deps \
     && rm -rf /var/lib/apt/lists/*
 
+RUN corepack enable && corepack prepare pnpm@10 --activate
+
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV CHROME_FOR_TESTING_PATH=/opt/chrome-linux64/chrome
 
