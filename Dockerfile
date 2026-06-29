@@ -9,16 +9,22 @@ LABEL "repository"="https://github.com/mujo-code/puppeteer-headful"
 LABEL "homepage"="https://github.com/mujo-code/puppeteer-headful"
 LABEL "maintainer"="Jacob Lowe"
 
-RUN  apt-get update \
-     # Install latest chrome dev package, which installs the necessary libs to
-     # make the bundled version of Chromium that Puppeteer installs work.
-     && apt-get install -y wget xvfb --no-install-recommends \
-     && wget -O /tmp/chrome.deb https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_138.0.7204.183-1_amd64.deb \
-     && apt install -y /tmp/chrome.deb \
-     && rm /tmp/chrome.deb
+# Pin Chrome so CI image builds stay reproducible. Bump when upgrading; check
+# https://dl.google.com/linux/chrome/deb/dists/stable/main/binary-amd64/Packages
+ARG CHROME_VERSION=149.0.7827.200-1
+
+RUN apt-get update \
+    && apt-get install -y wget gnupg xvfb --no-install-recommends \
+    && wget -q -O - https://dl.google.com/linux/linux_signing_key.pub \
+       | gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg \
+    && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] https://dl.google.com/linux/chrome/deb/ stable main" \
+       > /etc/apt/sources.list.d/google-chrome.list \
+    && apt-get update \
+    && apt-get install -y "google-chrome-stable=${CHROME_VERSION}" --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
 
 
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
 COPY README.md /
 
